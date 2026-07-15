@@ -1,0 +1,8 @@
+# Normalización de fin de línea (lección del vault Sistema Maestro):
+# los hooks son bash y DEBEN conservar LF siempre — con CRLF, el shebang
+# y los `\r` finales rompen la ejecución en Git Bash (Windows).
+* text=auto
+*.sh text eol=lf
+.claude/hooks/* text eol=lf
+.githooks/* text eol=lf
+setup.sh text eol=lf
