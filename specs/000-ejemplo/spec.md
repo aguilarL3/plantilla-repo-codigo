@@ -1,3 +1,9 @@
+---
+type: Spec
+title: "Spec 000 — [nombre de la feature]"
+description: "[Una oración: qué feature especifica este documento.]"
+---
+
 # Spec 000 — [nombre de la feature]
 
 > El QUÉ y el POR QUÉ. Sin detalles de implementación (eso va en plan.md).

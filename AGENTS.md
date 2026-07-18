@@ -20,6 +20,7 @@
 - [Estilo de código que difiera del default del lenguaje — si no difiere, borrar esta sección]
 - Commits: convencionales (`feat:`, `fix:`, `docs:`...), **deliberados y con tests en verde** — nunca auto-commit.
 - Toda tarea cierra con su verificación corriendo (tests/build), no con "parece que anda".
+- **Docs (`specs/`, `docs/adr/`, `docs/product/`, `BITACORA`):** frontmatter mínimo `type` · `title` · `description` (vocabulario [OKF](https://github.com/GoogleCloudPlatform/knowledge-catalog); las plantillas ya lo traen). Enlaces internos en **markdown estándar** `[texto](ruta.md)`. Sin `index.md` ni maquinaria: `README.md` es la guía de cada carpeta (convención GitHub). El código (`src/`) no lleva nada de esto.
 
 ## Dónde está el contexto
 
