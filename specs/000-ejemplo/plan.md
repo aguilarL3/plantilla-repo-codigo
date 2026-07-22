@@ -14,5 +14,11 @@ description: "[Una oración: cómo se implementa la feature de spec.md.]"
 ## Archivos e interfaces
 [Qué se crea/modifica, con rutas.]
 
+## Modelo de datos
+[Tablas/campos/relaciones nuevos o modificados. Omitir si la feature no toca datos.]
+
+## Integraciones
+[APIs o servicios externos, con su modo de fallo. Omitir si no hay.]
+
 ## Riesgos y decisiones abiertas
 [Lo que puede salir mal o falta decidir. Si una decisión es cara de revertir → docs/adr/.]
