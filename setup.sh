@@ -11,9 +11,14 @@ cd "$(dirname "$0")"
 echo "== Setup plantilla-repo-codigo =="
 
 # 0. Modo del repo (compartido, versionado en repo.conf)
-REPO_MODE="solo"; MAIN_BRANCH="main"
-# shellcheck disable=SC1091
-[ -f repo.conf ] && . ./repo.conf 2>/dev/null
+# Se PARSEA, no se sourcea: repo.conf es un archivo versionado, y sourcearlo
+# haría que un PR a la config ejecute shell en la máquina de quien clona.
+conf_get() {
+  val="$(sed -n "s/^[[:space:]]*$1[[:space:]]*=[[:space:]]*\([A-Za-z0-9._/-]*\).*/\1/p" repo.conf 2>/dev/null | head -1)"
+  if [ -n "$val" ]; then printf '%s' "$val"; else printf '%s' "$2"; fi
+}
+REPO_MODE="$(conf_get REPO_MODE solo)"
+MAIN_BRANCH="$(conf_get MAIN_BRANCH main)"
 echo "[i] REPO_MODE = $REPO_MODE (cambiar en repo.conf)"
 
 # 1. Repo git (si la carpeta se copió sin .git)

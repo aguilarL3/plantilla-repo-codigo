@@ -2,8 +2,8 @@
 # Git hook pre-commit del baseline de seguridad.
 # Se activa con `bash setup.sh` (que hace `git config core.hooksPath .githooks`).
 #
-# Orden: gate de rama (barato, modo equipo) → secretos (bloqueante siempre).
-# En el kickoff se agregan acá lint y tests del stack, ANTES del exec final.
+# Orden: gate de rama (barato) → secretos → lint/tests (lo más caro, al final).
+# Fallar por un secreto no debe costar una corrida entera de la suite.
 set -uo pipefail
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")"
 cd "$ROOT" 2>/dev/null || exit 0
@@ -12,9 +12,16 @@ cd "$ROOT" 2>/dev/null || exit 0
 # En equipo nadie commitea directo a la rama principal: todo entra por PR, que
 # es donde corren CODEOWNERS y el workflow `verify`. Committear a main saltea
 # las dos cosas. En modo `solo` este bloque no hace nada.
-REPO_MODE="solo"; MAIN_BRANCH="main"
-# shellcheck disable=SC1091
-[ -f repo.conf ] && . ./repo.conf 2>/dev/null
+#
+# repo.conf se PARSEA, no se sourcea: es un archivo versionado que ejecutaría
+# shell en la máquina de cada colaborador en cada commit. Un `. ./repo.conf`
+# convierte un PR a un archivo de config en ejecución remota de código.
+conf_get() {
+  val="$(sed -n "s/^[[:space:]]*$1[[:space:]]*=[[:space:]]*\([A-Za-z0-9._/-]*\).*/\1/p" repo.conf 2>/dev/null | head -1)"
+  if [ -n "$val" ]; then printf '%s' "$val"; else printf '%s' "$2"; fi
+}
+REPO_MODE="$(conf_get REPO_MODE solo)"
+MAIN_BRANCH="$(conf_get MAIN_BRANCH main)"
 
 if [ "$REPO_MODE" = "equipo" ] && [ ! -f .repo-meta/branch-gate.disabled ]; then
   BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")"
@@ -34,10 +41,13 @@ if [ "$REPO_MODE" = "equipo" ] && [ ! -f .repo-meta/branch-gate.disabled ]; then
   fi
 fi
 
+# ── Secretos (bloqueante, siempre) ───────────────────────────────────────────
+bash "$ROOT/.claude/hooks/secret-scan.sh" || exit 1
+
 # ── Lint y tests del stack ───────────────────────────────────────────────────
-# Cablear en el kickoff (paso 6), mismos comandos que .github/workflows/verify.yml:
+# Cablear en el kickoff (paso 6), mismos comandos que .github/workflows/verify.yml.
+# Van al final a propósito: son lo más lento del hook.
 # npm run lint || exit 1
 # npm test     || exit 1
 
-# ── Secretos (bloqueante, siempre) ───────────────────────────────────────────
-exec bash "$ROOT/.claude/hooks/secret-scan.sh"
+exit 0
