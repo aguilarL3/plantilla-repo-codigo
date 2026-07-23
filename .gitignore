@@ -28,5 +28,6 @@ build/
 venv/
 # Grafo de conocimiento del repo (graphify, local)
 graphify-out/
-# Marcas de sesión de los hooks (local, nunca a git)
+# Marcas de sesión y kill-switches de los hooks (local, nunca a git)
+# OJO: repo.conf NO va acá — el modo del repo es compartido y se versiona.
 .repo-meta/

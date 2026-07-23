@@ -23,10 +23,11 @@ Prerrequisito: PRD/MVP ya escrito en el vault dueño (personal o de empresa) —
 3. *(vault)* **Exportar el pack de contexto** del vault → `docs/product/PRD.md` (+ decisiones), con encabezado de fecha y origen. Push consciente: el repo nunca lee el vault por su cuenta. Sin vault: escribí el PRD directo ahí.
 4. **Completar `AGENTS.md`**: nombre, qué es, stack y comandos reales. Borrar todo placeholder que no aplique — la ley se mantiene magra.
 5. **Completar `README.proyecto.md` y renombrarlo a `README.md`** (pisa este archivo: la plantilla ya cumplió su función).
-6. **Elegir stack e inicializar** (`npm create`, `uv init`, etc.). Configurar test runner y lint, y **cablearlos en `.githooks/pre-commit`** (hoy solo corre secret-scan). Tras unas sesiones, generar la allowlist de permisos del stack con `/fewer-permission-prompts` (del proyecto → `settings.json`; personal → `settings.local.json`).
+6. **Elegir stack e inicializar** (`npm create`, `uv init`, etc.). Configurar test runner y lint, y **cablearlos en los dos lugares**: `.githooks/pre-commit` (tu máquina) y `.github/workflows/verify.yml` (el PR) — los dos traen el bloque marcado. Hoy solo corre secret-scan. Tras unas sesiones, generar la allowlist de permisos del stack con `/fewer-permission-prompts` (del proyecto → `settings.json`; personal → `settings.local.json`).
 7. **Primera spec**: `specs/001-mvp/spec.md` (qué) → `plan.md` (cómo) → `tasks.md` (pasos chicos, sin saltos de complejidad).
 8. *(vault)* Crear la **nota de proyecto en el vault** (o actualizarla): campo `repo:` apuntando acá.
-9. Abrir Claude Code **desde esta carpeta** (nunca desde el vault) y a construir.
+9. **Si van a ser más de uno:** ver *Más de una persona en el repo*, más abajo (son 4 pasos y uno es en GitHub).
+10. Abrir Claude Code **desde esta carpeta** (nunca desde el vault) y a construir.
 
 > **Config local del operador** (`.claude/settings.local.json`, gitignoreado): allowlist personal y, si sos el dueño del vault, `additionalDirectories` hacia el vault de la **misma esfera** para consultas ad-hoc. Es un atajo de tu máquina, nunca una dependencia: el repo funciona completo sin el vault.
 
@@ -45,6 +46,24 @@ Prerrequisito: PRD/MVP ya escrito en el vault dueño (personal o de empresa) —
 | `.gitattributes` | Hooks bash siempre LF (con CRLF se rompen en Git Bash/Windows) |
 | `README.proyecto.md` | Esqueleto del README real del proyecto (paso 5 del kickoff) |
 | `specs/000-ejemplo/` | Esqueleto spec → plan → tasks (borrar al crear la 001 real) |
+| `repo.conf` | `REPO_MODE=solo\|equipo` — el modo del repo (versionado, compartido) |
+| `.github/workflows/verify.yml` | El gate del lado del servidor: secret-scan en cada PR |
+| `.github/CODEOWNERS.example` | Quién aprueba qué — copiar a `CODEOWNERS` para activar |
+
+## Más de una persona en el repo
+
+Un repo de un solo dueño no paga nada por esta capa: `REPO_MODE=solo` es el default y queda inerte. Cuando entra la segunda persona:
+
+1. **`REPO_MODE=equipo` en `repo.conf`.** Desde ese commit el `pre-commit` bloquea commits directos a `main`: todo entra por PR.
+2. **`cp .github/CODEOWNERS.example .github/CODEOWNERS`** y poner los @usuarios reales.
+3. **Reglas de rama en GitHub** (Settings → Rules, sobre `main`): require PR · require review from Code Owners · require status check `verify` · block force pushes. **Este paso no se puede automatizar desde el repo**, y sin él los otros dos son una convención, no un control.
+4. **Cada persona corre `bash setup.sh` en su clon.** Es lo que activa `core.hooksPath`.
+
+> Por qué el gate de servidor no es opcional: `core.hooksPath` es **config local**, no viaja con el repo, y `--no-verify` lo saltea en un teclazo. Con una persona eso es disciplina; con varias es estadística.
+
+## Varios agentes en paralelo
+
+Un worktree por agente (`git worktree add -b agent/<nombre> ../<proyecto>-<nombre>`): cada uno tiene su checkout y su `.repo-meta/`, así que las marcas de sesión no se pisan. `docs/BITACORA.md` está marcado `merge=union` para que dos handoffs simultáneos se unan en vez de dar conflicto — y por eso cada entrada lleva **agente y rama** en el encabezado. Las reglas completas están en `AGENTS.md` §*Git: ramas, worktrees y trabajo en paralelo*, que es lo que leen los agentes.
 
 ## Reglas de la frontera (resumen del SOP-013)
 

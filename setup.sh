@@ -2,14 +2,23 @@
 # Setup del repo (correr UNA vez por clon/copia — Git Bash en Windows).
 # Activa el gate pre-commit y verifica los requisitos del baseline de seguridad.
 # Sin esto, el secret-scan NO corre: core.hooksPath es config local y no viaja con el repo.
+#
+# Lo corren los DOS caminos: quien crea el repo desde la plantilla, y cada
+# persona que después lo clona. No es un paso de fundador.
 set -uo pipefail
 cd "$(dirname "$0")"
 
 echo "== Setup plantilla-repo-codigo =="
 
+# 0. Modo del repo (compartido, versionado en repo.conf)
+REPO_MODE="solo"; MAIN_BRANCH="main"
+# shellcheck disable=SC1091
+[ -f repo.conf ] && . ./repo.conf 2>/dev/null
+echo "[i] REPO_MODE = $REPO_MODE (cambiar en repo.conf)"
+
 # 1. Repo git (si la carpeta se copió sin .git)
 if [ ! -d .git ]; then
-  git init -b main
+  git init -b "$MAIN_BRANCH"
   echo "[ok] git init"
 fi
 
@@ -28,4 +37,34 @@ else
   echo "[AVISO] falta python: security-guard queda fail-open (los deny de settings.json siguen activos)"
 fi
 
+# 5. Modo equipo: lo que el gate local NO puede garantizar por sí solo
+if [ "$REPO_MODE" = "equipo" ]; then
+  echo ""
+  echo "== Modo equipo =="
+  echo "[ok] pre-commit bloquea commits directos a «$MAIN_BRANCH» (todo entra por PR)"
+
+  if [ -f .github/CODEOWNERS ]; then
+    echo "[ok] .github/CODEOWNERS presente"
+  else
+    echo "[AVISO] falta .github/CODEOWNERS — copialo de .github/CODEOWNERS.example y poné los @usuarios."
+    echo "        Sin él, un PR puede tocar AGENTS.md, .claude/ o los hooks sin revisión del dueño."
+  fi
+
+  # Identidad de commit: en equipo el autor tiene que ser la persona, no un default.
+  if [ -z "$(git config user.email 2>/dev/null)" ]; then
+    echo "[AVISO] no tenés user.email configurado — tus commits van a quedar sin autor identificable."
+    echo "        git config user.name \"Tu Nombre\" && git config user.email \"vos@ejemplo.com\""
+  fi
+
+  echo ""
+  echo "   ⚠️ Esto NO se puede activar desde el repo — va en GitHub"
+  echo "      (Settings → Rules → sobre «$MAIN_BRANCH»):"
+  echo "        · Require a pull request before merging"
+  echo "        · Require review from Code Owners"
+  echo "        · Require status checks to pass → check «verify»"
+  echo "        · Block force pushes"
+  echo "      Sin esas reglas, lo de arriba es una convención que se saltea con --no-verify."
+fi
+
+echo ""
 echo "== Listo. Siguiente: completar AGENTS.md y exportar el PRD a docs/product/ (ver README) =="

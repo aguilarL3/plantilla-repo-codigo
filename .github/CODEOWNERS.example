@@ -1,0 +1,47 @@
+# CODEOWNERS — quién tiene que aprobar qué (PLANTILLA, inactiva)
+#
+# Activar: copiar este archivo a `.github/CODEOWNERS` (sin `.example`) y
+# reemplazar los @usuarios. Mientras se llame `.example`, GitHub lo ignora.
+#
+# Después, en GitHub → Settings → Rules → sobre `main`:
+#   · Require a pull request before merging
+#   · Require review from Code Owners      ← esto es lo que activa este archivo
+#   · Require status checks to pass        → elegir el check `verify`
+#   · Block force pushes
+# Sin la regla de rama, CODEOWNERS solo sugiere revisores; no obliga a nadie.
+#
+# Requisitos que fallan EN SILENCIO si no se cumplen:
+#   · Cada @usuario debe tener permiso de escritura en el repo, si no la regla
+#     se ignora sin avisar.
+#   · Los equipos van como @<organización>/<equipo>, nunca @<equipo> solo.
+#   · Gana la ÚLTIMA línea que matchea, no la más específica. Por eso los
+#     archivos-ley van al final: si estuvieran arriba, un `/src/` posterior
+#     podría desplazarlos.
+#   · Las rutas NO admiten espacios (la línea se parte por whitespace: lo
+#     primero es la ruta, lo demás son dueños). Si tu proyecto crea una carpeta
+#     con espacios, escapala: `/mi\ carpeta/`.
+
+# ── Default: todo el repo ────────────────────────────────────────────────────
+*                       @dueño-del-repo
+
+# ── Código por área (ejemplo — ajustar al stack en el kickoff) ───────────────
+# /src/api/             @backend-owner
+# /src/ui/              @frontend-owner
+# /migrations/          @dueño-del-repo @backend-owner
+
+# ── Producto: se decide en el vault, acá solo se re-exporta ──────────────────
+/docs/product/          @dueño-del-repo
+
+# ── Archivos-ley y seguridad: SIEMPRE revisados por el dueño ────────────────
+# Van al final a propósito: gana la última línea que matchea.
+# Un PR que afloje estos archivos desarma el resto de las guardas, y es
+# exactamente el cambio que más fácil pasa desapercibido en una revisión.
+/AGENTS.md              @dueño-del-repo
+/CLAUDE.md              @dueño-del-repo
+/.claude/               @dueño-del-repo
+/.githooks/             @dueño-del-repo
+/.github/               @dueño-del-repo
+/.gitattributes         @dueño-del-repo
+/.gitignore             @dueño-del-repo
+/setup.sh               @dueño-del-repo
+/repo.conf              @dueño-del-repo

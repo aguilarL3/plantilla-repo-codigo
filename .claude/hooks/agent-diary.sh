@@ -41,5 +41,11 @@ find .repo-meta -maxdepth 1 -name 'diary-done-*' -mtime +7 -delete 2>/dev/null |
 
 DAY="$(date +%Y-%m-%d)"
 
-printf '{"decision":"block","reason":"[AGENT DIARY] Esta sesión editó archivos del repo. Antes de terminar, registrá UNA entrada al FINAL de docs/BITACORA.md con este formato:\\n\\n## %s — <tu agente>\\n- Qué se avanzó: (con estado de tests: en verde / rotos / no corridos)\\n- Qué quedó bloqueado:\\n- Qué se decidió: (si es técnica cara de revertir → también a docs/adr/)\\n- Qué debe saber el próximo agente:\\n\\nREGLAS: la entrada más reciente SIEMPRE abajo. UNA entrada por sesión: si seguís trabajando después, AMPLIÁ la tuya (no crees otra). Después terminá normalmente. (Desactivar: crear .repo-meta/diary.disabled)"}' "$DAY"
+# Rama actual: con varios agentes en worktrees (o varias personas en ramas), el
+# orden del archivo deja de identificar quién escribió qué — la entrada tiene que
+# decirlo. Se sanitiza porque el valor se interpola dentro de un string JSON.
+BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null | tr -cd 'A-Za-z0-9._/-' | head -c 60)"
+[ -n "$BRANCH" ] || BRANCH="sin-rama"
+
+printf '{"decision":"block","reason":"[AGENT DIARY] Esta sesión editó archivos del repo. Antes de terminar, registrá UNA entrada al FINAL de docs/BITACORA.md con este formato:\\n\\n## %s — <tu agente> (rama: %s)\\n- Qué se avanzó: (con estado de tests: en verde / rotos / no corridos)\\n- Qué quedó bloqueado:\\n- Qué se decidió: (si es técnica cara de revertir → también a docs/adr/)\\n- Qué debe saber el próximo agente:\\n\\nREGLAS: la entrada más reciente SIEMPRE abajo. UNA entrada por sesión: si seguís trabajando después, AMPLIÁ la tuya (no crees otra). Poné SIEMPRE tu agente y tu rama en el encabezado: el archivo es merge=union, así que si otro agente trabajó en paralelo sus entradas se van a intercalar con las tuyas y el orden no alcanza para saber quién escribió qué. Después terminá normalmente. (Desactivar: crear .repo-meta/diary.disabled)"}' "$DAY" "$BRANCH"
 exit 0

@@ -6,3 +6,16 @@
 .claude/hooks/* text eol=lf
 .githooks/* text eol=lf
 setup.sh text eol=lf
+
+# ── Archivos append-only: unión en vez de conflicto ──────────────────────────
+# `merge=union` conserva las líneas de AMBOS lados en lugar de marcar conflicto.
+# La bitácora es el hotspot estructural del repo: el Stop hook OBLIGA a escribir
+# al final del archivo, así que dos agentes en worktrees distintos (o dos
+# personas en ramas distintas) chocan SIEMPRE en la última línea.
+#
+# ⚠️ Dos límites: union NO ordena — tras un merge conflictivo, revisá que el
+# orden cronológico siga teniendo sentido — y la UI web de GitHub no lo honra
+# al resolver conflictos en el navegador.
+# NO extender a código ni a specs: ahí el conflicto explícito es lo correcto,
+# porque unir dos versiones de una función produce un archivo que no compila.
+docs/BITACORA.md merge=union

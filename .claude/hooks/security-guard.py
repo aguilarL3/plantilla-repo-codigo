@@ -61,7 +61,7 @@ CONTROL_WRITE = re.compile(
     r'(\.claude[/\\]|\.githooks[/\\]|\.mcp\.json)',
     re.IGNORECASE)
 
-DISABLE_TROJAN = "  (Si es un falso positivo puntual, desactivá el guard: crear .vault-meta/security-guard.disabled)"
+DISABLE_TROJAN = "  (Si es un falso positivo puntual, desactivá el guard: crear .repo-meta/security-guard.disabled)"
 
 def check_bash(cmd):
     if NETWORK_OUT.search(cmd) or NETCAT.search(cmd):

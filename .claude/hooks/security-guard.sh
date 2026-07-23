@@ -11,11 +11,11 @@
 # Ver [[SOP de Seguridad]] §2 y [[Anatomía de los hooks del vault]].
 #
 # FAIL-OPEN: si no hay python, no bloquea (permite) — la capa 1 (permisos) sigue
-# vigente igual. Kill-switch: .vault-meta/security-guard.disabled
+# vigente igual. Kill-switch: .repo-meta/security-guard.disabled
 set -uo pipefail
 
 ROOT="${CLAUDE_PROJECT_DIR:-$PWD}"
-[ -f "$ROOT/.vault-meta/security-guard.disabled" ] && exit 0
+[ -f "$ROOT/.repo-meta/security-guard.disabled" ] && exit 0
 
 PY="$(command -v python 2>/dev/null || command -v python3 2>/dev/null || true)"
 [ -z "$PY" ] && exit 0   # sin python -> fail-open
