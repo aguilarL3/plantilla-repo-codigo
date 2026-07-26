@@ -30,10 +30,14 @@ NAME_RE='(^|/)\.env(\.|$)|\.pem$|\.ppk$|\.p12$|\.pfx$|(^|/)id_rsa|(^|/)id_ed2551
 # Contenido con formato de clave/token conocido (bajo falso positivo).
 CONTENT_RE='-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{22,}|xox[baprs]-[A-Za-z0-9-]{10,}|AIza[0-9A-Za-z_\-]{35}|-----BEGIN OPENSSH PRIVATE KEY-----'
 
+# quotepath=false: sin esto git entrecomilla y escapa las rutas no-ASCII
+# ("contrase\361a.env"); el nombre escapado evade el chequeo por NAME_RE y
+# `git show ":$path"` no resuelve -> el CONTENIDO de un archivo con nombre/ruta
+# acentuada nunca se escanea. Agujero de seguridad, no cosmético.
 if [ -n "$RANGE_BASE" ]; then
-  staged="$(git diff --name-only --diff-filter=ACM "$RANGE_BASE...$RANGE_HEAD" 2>/dev/null || true)"
+  staged="$(git -c core.quotepath=false diff --name-only --diff-filter=ACM "$RANGE_BASE...$RANGE_HEAD" 2>/dev/null || true)"
 else
-  staged="$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null || true)"
+  staged="$(git -c core.quotepath=false diff --cached --name-only --diff-filter=ACM 2>/dev/null || true)"
 fi
 [ -z "$staged" ] && exit 0
 
