@@ -2,6 +2,9 @@
 type: Bitacora
 title: "Bitácora de agentes"
 description: "Handoff cronológico entre sesiones de agente en este repo."
+generated:
+  by: process:claude-code
+  at: 2026-07-28T00:00:00Z
 ---
 
 # Bitácora de agentes

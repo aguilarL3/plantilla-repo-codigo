@@ -2,6 +2,9 @@
 type: Spec
 title: "Spec 000 — [nombre de la feature]"
 description: "[Una oración: qué feature especifica este documento.]"
+generated:
+  by: process:claude-code
+  at: 2026-07-28T00:00:00Z
 ---
 
 # Spec 000 — [nombre de la feature]

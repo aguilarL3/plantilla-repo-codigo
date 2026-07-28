@@ -7,6 +7,9 @@ Una decisión = un archivo: `NNN-titulo-corto.md`. Formato mínimo:
 type: ADR
 title: "NNN — [Decisión en una frase]"
 description: "[Una oración: qué decide este ADR.]"
+generated:
+  by: process:claude-code
+  at: 2026-07-28T00:00:00Z
 ---
 
 # NNN — [Decisión en una frase]
@@ -17,6 +20,6 @@ description: "[Una oración: qué decide este ADR.]"
 - **Consecuencias:** qué se acepta a cambio
 ```
 
-> El frontmatter (`type`/`title`/`description`) es opcional pero recomendado: ayuda a los agentes a navegar los docs. Vocabulario alineado con el [Open Knowledge Format v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog) (usamos solo el núcleo estable — sin `generated`/`index.md`/maquinaria).
+> Frontmatter [Open Knowledge Format v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog): `type`/`title`/`description` + `generated: {by, at}` (`by` = actor `process:<agente>` o `human:<usuario>`; `at` = datetime ISO 8601 de la última edición de fondo). Es opcional pero recomendado: ayuda a los agentes a navegar los docs. Sin `index.md` ni maquinaria — `README.md` es la guía de cada carpeta.
 
 Se registra cuando la decisión sea cara de revertir (base de datos, arquitectura, dependencia central). Las triviales no.

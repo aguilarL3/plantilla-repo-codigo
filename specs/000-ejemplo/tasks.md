@@ -2,6 +2,9 @@
 type: Tasks
 title: "Tasks 000 — [nombre de la feature]"
 description: "[Una oración: los pasos para construir la feature de plan.md.]"
+generated:
+  by: process:claude-code
+  at: 2026-07-28T00:00:00Z
 ---
 
 # Tasks 000 — [nombre de la feature]

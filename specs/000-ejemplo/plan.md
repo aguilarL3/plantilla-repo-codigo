@@ -2,6 +2,9 @@
 type: Plan
 title: "Plan 000 — [nombre de la feature]"
 description: "[Una oración: cómo se implementa la feature de spec.md.]"
+generated:
+  by: process:claude-code
+  at: 2026-07-28T00:00:00Z
 ---
 
 # Plan 000 — [nombre de la feature]
