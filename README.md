@@ -18,7 +18,9 @@ Origen: `SOP Proyectos de Código` (SOP-013) del [Sistema Maestro](https://githu
 
 Prerrequisito: PRD/MVP ya escrito en el vault dueño (personal o de empresa) — o donde pienses tu producto. Si no existe, primero eso: el repo no piensa el producto.
 
-1. **Copiar esta carpeta** al nuevo proyecto: `cp -r plantilla-repo-codigo ~/dev/<proyecto>` y borrar el `.git/` copiado (`rm -rf .git`) — o usarla como GitHub template repo cuando se publique.
+1. **Obtener el seed** por cualquiera de las dos vías (ninguna deja `origin` apuntando al template):
+   - **"Use this template"** en GitHub → crea tu repo (marcalo privado si corresponde) → clonalo. *(Ya publicado como template repo.)*
+   - O **copiar la carpeta** y arrancar git de cero: `cp -r plantilla-repo-codigo ~/dev/<proyecto>` y borrar el `.git/` copiado (`rm -rf .git`) — `setup.sh` hace `git init` fresco.
 2. `cd ~/dev/<proyecto>` → **`bash setup.sh`** — hace `git init` si falta, activa el gate pre-commit (`core.hooksPath`) y chequea requisitos (Git Bash + Python). **Sin este paso el secret-scan NO corre**: la config de hooks es local y no viaja con el repo.
 3. *(vault)* **Exportar el pack de contexto** del vault → `docs/product/PRD.md` (+ decisiones), con encabezado de fecha y origen. Push consciente: el repo nunca lee el vault por su cuenta. Sin vault: escribí el PRD directo ahí.
 4. **Completar `AGENTS.md`**: nombre, qué es, stack y comandos reales. Borrar todo placeholder que no aplique — la ley se mantiene magra.
