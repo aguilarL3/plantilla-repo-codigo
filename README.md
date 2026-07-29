@@ -72,7 +72,7 @@ Un worktree por agente (`git worktree add -b agent/<nombre> ../<proyecto>-<nombr
 - El **vault** piensa el producto (PRD, decisiones, investigación). El **repo** lo construye.
 - El repo es **autosuficiente**: si no funciona sin el vault montado, la frontera está rota.
 - Cambio de producto → se decide en el vault → se re-exporta el snapshot. Cambio técnico → `docs/adr/` acá.
-- Al cerrar hitos: evidencia → Career OS del vault personal; patrón aprendido → `04 Knowledge/Temas/`.
+- Al cerrar un hito, desde el vault personal (push consciente) y con `docs/BITACORA.md` como materia prima: **historia STAR** → Career OS (la R es dato de negocio, no está en la bitácora); **patrón aprendido** → `04 Knowledge/Temas/` (casi siempre Explanation). El código se queda acá.
 
 ## Licencia
 
