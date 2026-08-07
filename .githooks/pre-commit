@@ -9,9 +9,14 @@ ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")"
 cd "$ROOT" 2>/dev/null || exit 0
 
 # ── Gate de rama (solo modo equipo) ──────────────────────────────────────────
-# En equipo nadie commitea directo a la rama principal: todo entra por PR, que
-# es donde corren CODEOWNERS y el workflow `verify`. Committear a main saltea
-# las dos cosas. En modo `solo` este bloque no hace nada.
+# En equipo nadie commitea directo a la rama principal: todo entra por PR, que es
+# donde otra persona lo revisa y donde corre el workflow `verify`. En modo `solo`
+# este bloque no hace nada.
+#
+# ⚠️ No prometas más de lo que hay: CODEOWNERS puede no existir, y sin reglas de
+# rama (plan Free + repo privado) el `verify` del PR es señal y no bloqueo. Este
+# gate local suele ser el ÚNICO control automático real — de ahí que el mensaje
+# de abajo no mencione controles de servidor que quizás no estén.
 #
 # repo.conf se PARSEA, no se sourcea: es un archivo versionado que ejecutaría
 # shell en la máquina de cada colaborador en cada commit. Un `. ./repo.conf`
@@ -28,13 +33,19 @@ if [ "$REPO_MODE" = "equipo" ] && [ ! -f .repo-meta/branch-gate.disabled ]; then
   if [ "$BRANCH" = "$MAIN_BRANCH" ]; then
     echo "🔴 pre-commit: este repo está en REPO_MODE=equipo y estás sobre «$MAIN_BRANCH»." >&2
     echo "" >&2
-    echo "   En equipo, main entra solo por PR (ahí corren CODEOWNERS y el workflow verify)." >&2
-    echo "   Movete a una rama y volvé a commitear:" >&2
+    echo "   En equipo, $MAIN_BRANCH entra solo por PR: ahí lo revisa la otra persona." >&2
+    echo "   Movete a tu rama y volvé a commitear:" >&2
     echo "" >&2
-    echo "     git switch -c <inicial>/<tema>      # ej. b/login-oauth" >&2
+    echo "     git switch -c <tu-prefijo>/<tema>      # ej. le/login-oauth" >&2
+    echo "" >&2
+    echo "   El prefijo es de DOS letras, no la inicial (con dos personas que" >&2
+    echo "   comparten inicial, la inicial sola es ambigua)." >&2
+    if [ -f COMO-TRABAJAMOS.md ]; then
+      echo "   Cuál te toca: ./COMO-TRABAJAMOS.md §2" >&2
+    fi
     echo "" >&2
     echo "   Si ya commiteaste sobre $MAIN_BRANCH y querés rescatar el trabajo:" >&2
-    echo "     git switch -c <inicial>/<tema> && git switch $MAIN_BRANCH && git reset --hard origin/$MAIN_BRANCH" >&2
+    echo "     git switch -c <tu-prefijo>/<tema> && git switch $MAIN_BRANCH && git reset --hard origin/$MAIN_BRANCH" >&2
     echo "" >&2
     echo "   (Excepción puntual: git commit --no-verify. Kill-switch: .repo-meta/branch-gate.disabled)" >&2
     exit 1

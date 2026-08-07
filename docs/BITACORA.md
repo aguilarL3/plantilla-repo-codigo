@@ -39,3 +39,14 @@ Formato:
 **Verificado:** `bash -n setup.sh` y corrida real completa. El `setup.sh` portado es el mismo archivo probado en `perfiles-qr` y no arrastra nada específico de esa instancia (grepeado).
 
 **Qué debe saber el próximo agente:** el `README` del seed ahora ordena los pasos de modo equipo poniendo **`setup.sh` antes** de las reglas de rama, a propósito: cuando el servidor no puede ayudar, ese paso es el crítico. Si algún día se agrega detección automática del plan de GitHub, el lugar es el bloque de modo equipo de `setup.sh` — hoy no se hace porque exigiría red y `gh` autenticado en el clon de cada persona, y un setup que falla por eso es peor que un aviso bien redactado.
+
+## 2026-08-06 — Claude Code (rama: main)
+
+**Qué se hizo:** arreglado el mensaje del **gate de rama**, que es el texto de mayor impacto del repo — aparece en el momento exacto en que la persona se equivoca, cuando de verdad lo va a leer. Tenía los dos defectos que esta tanda viene corrigiendo en todos lados:
+
+1. **Prometía controles que pueden no existir:** *"todo entra por PR, ahí corren CODEOWNERS y el workflow verify"*. `CODEOWNERS` puede no existir (la plantilla trae solo el `.example`) y sin reglas de rama —plan Free + repo privado— el `verify` del PR es **señal, no bloqueo**. El gate local suele ser el único control automático real, así que el mensaje ya no nombra controles de servidor que quizás no estén: dice *"ahí lo revisa la otra persona"*, que es lo que sí pasa.
+2. **`git switch -c <inicial>/<tema>` con ejemplo `b/login-oauth`.** El prefijo va de **dos letras**; el mensaje ahora lo dice, explica por qué (dos personas que comparten inicial) y —si el archivo existe— remite a `COMO-TRABAJAMOS.md` §2 para saber cuál te toca.
+
+**Verificado:** `bash -n` acá, y en la instancia (`perfiles-qr`) la **prueba real**: commit sobre `main` rechazado, commit no creado, y el mensaje nuevo impreso completo con el link al acuerdo.
+
+**Qué debe saber el próximo agente:** el hook del seed y el de la instancia **divergen a propósito** en la parte de lint/tests (la capa código no viene en la plantilla), así que este arreglo **no se puede portar copiando el archivo** — se editan las mismas líneas en los dos. Si tocás el bloque del gate de rama, hacelo en ambos o quedan diciendo cosas distintas. Y la regla de fondo: **un mensaje de error que nombra controles opcionales miente la mitad de las veces**; nombrá solo lo que el propio gate garantiza.
