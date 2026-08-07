@@ -50,18 +50,36 @@ Prerrequisito: PRD/MVP ya escrito en el vault dueño (personal o de empresa) —
 | `specs/000-ejemplo/` | Esqueleto spec → plan → tasks (borrar al crear la 001 real) |
 | `repo.conf` | `REPO_MODE=solo\|equipo` — el modo del repo (versionado, compartido) |
 | `.github/workflows/verify.yml` | El gate del lado del servidor: secret-scan en cada PR |
-| `.github/CODEOWNERS.example` | Quién aprueba qué — copiar a `CODEOWNERS` para activar |
+| `.github/CODEOWNERS.example` | Quién **revisa** qué — copiar a `CODEOWNERS` para activar (no restringe quién escribe) |
+| `COMO-TRABAJAMOS.example.md` | El acuerdo de trabajo en lenguaje llano — completar y renombrar cuando entra la segunda persona |
 
 ## Más de una persona en el repo
 
 Un repo de un solo dueño no paga nada por esta capa: `REPO_MODE=solo` es el default y queda inerte. Cuando entra la segunda persona:
 
 1. **`REPO_MODE=equipo` en `repo.conf`.** Desde ese commit el `pre-commit` bloquea commits directos a `main`: todo entra por PR.
-2. **`cp .github/CODEOWNERS.example .github/CODEOWNERS`** y poner los @usuarios reales.
-3. **Reglas de rama en GitHub** (Settings → Rules, sobre `main`): require PR · require review from Code Owners · require status check `verify` · block force pushes. **Este paso no se puede automatizar desde el repo**, y sin él los otros dos son una convención, no un control.
-4. **Cada persona corre `bash setup.sh` en su clon.** Es lo que activa `core.hooksPath`.
+2. **Completar `COMO-TRABAJAMOS.example.md` y renombrarlo a `COMO-TRABAJAMOS.md`**, linkeado desde el README del proyecto. Es lo que la persona nueva lee en diez minutos antes de su primer commit: prefijos de rama, zonas, secretos, qué hacer si algo sale mal. Si el repo está en plan Free, **este documento no acompaña al control: es el control**.
+3. **`cp .github/CODEOWNERS.example .github/CODEOWNERS`** y poner los @usuarios reales — si va a servir de algo (ver el aviso de abajo).
+4. **Cada persona corre `bash setup.sh` en su clon.** Es lo que activa `core.hooksPath`, y **el script aborta si no queda**.
+5. **Reglas de rama en GitHub** (Settings → Rules, sobre `main`): require PR · require review from Code Owners · require status check `verify` · block force pushes. **Este paso no se puede automatizar desde el repo.**
 
-> Por qué el gate de servidor no es opcional: `core.hooksPath` es **config local**, no viaja con el repo, y `--no-verify` lo saltea en un teclazo. Con una persona eso es disciplina; con varias es estadística.
+> [!WARNING]
+> **El paso 5 no existe en plan Free con repo privado.** La API responde `403 · "Upgrade to GitHub Pro or make this repository public"` tanto para *branch protection* como para *rulesets*. No es un permiso mal puesto: la función no está en el plan. Verificado 2026-08-06.
+>
+> Lo que eso cambia, y conviene aceptarlo explícitamente en vez de descubrirlo:
+>
+> | Pieza | En Free + privado |
+> |---|---|
+> | Rama por persona + PR + squash | ✅ funciona (es convención) |
+> | `verify.yml` en el PR | ✅ corre — pero es **señal, no bloqueo**: un PR en rojo se mergea igual |
+> | Require PR / review from Code Owners / status checks / block force pushes | ❌ no disponibles |
+> | Gate de rama del `pre-commit` | ✅ **el único control automático real** |
+>
+> **`CODEOWNERS` en ese escenario** no restringe nada y ni siquiera auto-asigna revisor: queda como mapa documentado. Es una decisión razonable **diferirlo** y dejar las zonas en `COMO-TRABAJAMOS.md`, para no tener dos fuentes de verdad de lo mismo — una de ellas inerte. Si conviven y se contradicen, que esté escrito cuál manda.
+>
+> **Las tres salidas:** pasar a plan de pago, hacer el repo público, o aceptar la convención a conciencia. La tercera es legítima con dos personas que se hablan; con más deja de serlo.
+
+> Por qué el gate de servidor importa: `core.hooksPath` es **config local**, no viaja con el repo, y `--no-verify` lo saltea en un teclazo. Con una persona eso es disciplina; con varias es estadística. Cuando el servidor no puede ayudar, **el paso 4 pasa de higiene a paso crítico** — verificalo (`git config core.hooksPath` → `.githooks`), no lo des por hecho.
 
 ## Varios agentes en paralelo
 

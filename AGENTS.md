@@ -33,7 +33,7 @@
 
 El modo del repo está en `repo.conf` (`REPO_MODE=solo|equipo`). **Leelo antes de tu primer commit** — cambia quién firma y adónde podés commitear.
 
-- **Rama por tarea.** `git switch -c <inicial>/<tema>` (ej. `b/login-oauth`). Ramas cortas: se abren y se cierran lo antes posible; cuanto más viven, peor mergean.
+- **Rama por tarea.** `git switch -c <prefijo-de-tu-humano>/<tema>` (ej. `le/login-oauth`). **Los prefijos se fijan por escrito, no se improvisan** — están en `COMO-TRABAJAMOS.md` §2 si el repo tiene más de una persona. Usá **dos letras**, no la inicial: en cuanto dos personas comparten inicial (pasa más de lo que parece) la convención se vuelve ambigua y quedan ramas que parecen de otro. Si no sabés cuál te toca, preguntá antes de crear la rama. Ramas cortas: se abren y se cierran lo antes posible; cuanto más viven, peor mergean.
 - **Un worktree por agente** cuando corren varios a la vez: `git worktree add -b agent/<nombre> ../<proyecto>-<nombre>` (el `-b` crea la rama; sin él git aborta con `invalid reference` si no existe ya). El aislamiento real es un checkout físico separado, no la buena voluntad. Cada worktree tiene su propio `.repo-meta/`, así que las marcas de sesión no se pisan.
 - **Serializá los hotspots.** Sobre los archivos que casi toda tarea toca —`AGENTS.md`, `repo.conf`, config de build, lockfiles, migraciones, `specs/` en curso— no se paraleliza: escribe uno a la vez. Es la regla que más conflictos evita por unidad de esfuerzo, y **también aplica en modo `solo`** si corrés varios agentes.
 - **Los lockfiles y las migraciones no se mergean a mano.** Regenerá el lockfile desde el `main` ya integrado; renumerá tu migración. Un merge textual de esos archivos produce algo que parece resuelto y no lo está.
@@ -46,10 +46,21 @@ El modo del repo está en `repo.conf` (`REPO_MODE=solo|equipo`). **Leelo antes d
 Cambian tres cosas, y ninguna es opcional:
 
 - **El autor del commit es la persona, no vos.** `Author:` = quien te lanzó; vos bajás a trailer `Agent: <nombre>` + `Co-Authored-By:`. Un commit firmado por un agente es un commit sin nadie que responda por él.
-- **Nadie commitea a la rama principal.** El `pre-commit` te va a frenar si lo intentás. Todo entra por PR, que es donde corren `CODEOWNERS` y el workflow `verify`.
+- **Nadie commitea a la rama principal.** El `pre-commit` te va a frenar si lo intentás. Todo entra por PR.
 - **Al PR llega una rama por persona, no una por agente.** Tus worktrees los integra tu humano localmente antes de abrir el PR. Y ese PR no lo aprobás vos.
 
-> Tu zona de escritura es la intersección de tu tarea con la zona de tu humano en `.github/CODEOWNERS`. Fuera de ahí proponés, no escribís. Y la bitácora deja de ser tu handoff: con varias personas la última entrada puede ser de otro, en otro tema — leela como contexto del repo y redactá la tuya para cualquiera del equipo, no para tu yo de mañana.
+> [!WARNING]
+> **No asumas que en el PR hay controles: verificá cuáles existen en ESTE repo.** Tres cosas que suelen darse por hechas y a menudo no están:
+>
+> - **`.github/CODEOWNERS`** puede no existir — la plantilla trae solo `CODEOWNERS.example`. Y aun existiendo, **no restringe quién escribe**: solo auto-asigna revisor, y eso requiere *"Require review from Code Owners"*, que es una regla de rama.
+> - **Las reglas de rama de GitHub no existen en plan Free con repo privado.** La API responde `403 · "Upgrade to GitHub Pro or make this repository public"`. Sin ellas, el workflow `verify` es **señal, no bloqueo**: un PR en rojo se mergea igual.
+> - **El `verify` puede estar verde sin correr nada** si la suite no se cableó todavía (ver `README`, kickoff paso 7).
+>
+> **Consecuencia: el gate de `git commit` en la máquina de cada persona suele ser el único control automático real. No lo saltees con `--no-verify`.**
+>
+> **Tu zona de escritura** es la intersección de tu tarea con lo que diga el acuerdo escrito del repo (`COMO-TRABAJAMOS.md`), que es la fuente de verdad de las zonas — `CODEOWNERS`, cuando existe, es un mapa de revisores, no de permisos. Si los dos se contradicen, manda el acuerdo. Fuera de tu zona proponés, no escribís.
+
+> La bitácora deja de ser tu handoff: con varias personas la última entrada puede ser de otro, en otro tema — leela como contexto del repo y redactá la tuya para cualquiera del equipo, no para tu yo de mañana.
 
 ## Seguridad (no negociable)
 
