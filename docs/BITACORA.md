@@ -50,3 +50,16 @@ Formato:
 **Verificado:** `bash -n` acá, y en la instancia (`perfiles-qr`) la **prueba real**: commit sobre `main` rechazado, commit no creado, y el mensaje nuevo impreso completo con el link al acuerdo.
 
 **Qué debe saber el próximo agente:** el hook del seed y el de la instancia **divergen a propósito** en la parte de lint/tests (la capa código no viene en la plantilla), así que este arreglo **no se puede portar copiando el archivo** — se editan las mismas líneas en los dos. Si tocás el bloque del gate de rama, hacelo en ambos o quedan diciendo cosas distintas. Y la regla de fondo: **un mensaje de error que nombra controles opcionales miente la mitad de las veces**; nombrá solo lo que el propio gate garantiza.
+
+## 2026-08-07 — Claude Code (rama: main)
+
+**Qué se hizo:** portadas al seed las dos piezas que resuelven "¿cómo me entero de que hay un PR esperando?", surgidas de un caso real donde la respuesta era **de ninguna forma**.
+
+**El hallazgo que las motiva, verificado contra la API:** `CODEOWNERS` **no auto-asigna revisor en repos privados con plan Free**. Tres PRs abiertos con el archivo completo y las dos personas listadas como code owners en **todas** las rutas quedaron con `requested_reviewers` **vacío**. Consecuencia: la vista *"te pidieron review"* de GitHub y de `gh pr status` queda **muerta**.
+
+1. **`.claude/hooks/pr-notice.sh` + registro en `SessionStart`** — al abrir el agente, dice qué PRs abiertos esperan tu review y cuáles son tuyos esperando el review del otro. **No se apoya en review requests**, justamente porque no funcionan: lista los PR abiertos y separa por autor. Adaptado a las convenciones del seed: gate por `REPO_MODE` de `repo.conf` (**parseado, no sourceado**) y estado en `.repo-meta/`. Inerte en `solo`, fail-open completo, kill-switch `.repo-meta/pr-notice.disabled`. **Nota: el seed no tenía ningún hook de `SessionStart`** — este es el primero, así que el bloque es nuevo en `settings.json`.
+2. **`.github/workflows/aviso-de-pr.yml`** — al abrirse un PR, comenta mencionando a quien tiene que revisar. Una **@mención notifica siempre**, sin depender del plan ni de que la persona siga el repo: es el rodeo exacto a la limitación del `CODEOWNERS`. Pero un ping pelado no agrega nada sobre el mail del *watching*, así que el comentario **marca además si el PR toca las rutas que cambian el comportamiento del agente** (`AGENTS.md`, `.claude/`, hooks, `repo.conf`, `setup.sh`…) — eso es lo que más fácil se pasa por alto en un diff.
+
+**Tres decisiones de diseño del workflow que conviene no "simplificar":** (a) **sin `synchronize`** en el `on:`, porque cada push a la rama volvería a comentar; (b) **a quién mencionar se resuelve por API** (colaboradores con permiso de escritura, menos el autor) en vez de hardcodear handles — si entra o sale gente del equipo sigue estando bien solo; (c) **nunca falla el check**: todo con `|| true` y `exit 0`, porque un aviso roto no debe bloquear un PR. Y los valores entran por `env:`, **nunca interpolados con `${{ }}` dentro del `run:`** — un título de PR con comillas o `$(...)` se ejecutaría.
+
+**Verificado:** `bash -n` y corrida real del hook con `REPO_MODE=solo` → silencioso, como corresponde.
