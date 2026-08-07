@@ -58,8 +58,19 @@ git log -1 --format='%ae'      # confirmá qué correo quedó
 git pull
 git switch -c <xx>/mi-tema
 git push -u origin <xx>/mi-tema
-gh pr create          # o desde la web
+gh pr create --reviewer <la-otra-persona>    # o desde la web
 ```
+
+> [!IMPORTANT]
+> **Pedí el review explícitamente: no pasa solo.** Ese `--reviewer` no es cosmético — **sin él, la otra persona no se entera de que abriste el PR.**
+>
+> Se suele creer que `.github/CODEOWNERS` asigna revisor automáticamente. **Es falso en repos privados con plan Free** (verificado 2026-08-07: PRs con el archivo completo y todas las personas listadas quedaron con `requested_reviewers` vacío). Ahí el archivo sirve como **mapa documentado** de quién revisa qué, no como mecanismo.
+>
+> Con `--reviewer`, el PR aparece en la lista de *«te pidieron review»* de la otra persona — en GitHub, en `gh pr status` y en la barra lateral del editor. Desde la web es el mismo clic, en *Reviewers*.
+>
+> **Dos redes más, para no depender de que nadie se acuerde:**
+> - **Seguí el repo** en GitHub (*Watch* → *All Activity*): mail con cada PR nuevo, y push al teléfono con GitHub Mobile.
+> - El seed trae el hook `pr-notice.sh` (al abrir el agente te lista los PR que esperan tu review) y el workflow `aviso-de-pr.yml` (te **menciona** en el PR al abrirse, marcando si toca archivos de ley). La mención no depende del plan.
 
 ## 3. Nunca commitees en la rama principal
 
