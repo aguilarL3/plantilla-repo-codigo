@@ -47,5 +47,17 @@ DAY="$(date +%Y-%m-%d)"
 BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null | tr -cd 'A-Za-z0-9._/-' | head -c 60)"
 [ -n "$BRANCH" ] || BRANCH="sin-rama"
 
-printf '{"decision":"block","reason":"[AGENT DIARY] Esta sesión editó archivos del repo. Antes de terminar, registrá UNA entrada al FINAL de docs/BITACORA.md con este formato:\\n\\n## %s — <tu agente> (rama: %s)\\n- Qué se avanzó: (con estado de tests: en verde / rotos / no corridos)\\n- Qué quedó bloqueado:\\n- Qué se decidió: (si es técnica cara de revertir → también a docs/adr/)\\n- Qué debe saber el próximo agente:\\n\\nREGLAS: la entrada más reciente SIEMPRE abajo. UNA entrada por sesión: si seguís trabajando después, AMPLIÁ la tuya (no crees otra). Poné SIEMPRE tu agente y tu rama en el encabezado: el archivo es merge=union, así que si otro agente trabajó en paralelo sus entradas se van a intercalar con las tuyas y el orden no alcanza para saber quién escribió qué. Después terminá normalmente. (Desactivar: crear .repo-meta/diary.disabled)"}' "$DAY" "$BRANCH"
+# Tope de consolidación: docs/BITACORA.md no rota (a diferencia del vault, que
+# corta por mes) y encima recibe entradas de varias ramas por merge=union, así que
+# sin techo crece toda la vida del proyecto. Si se pasó, el aviso suma la
+# instrucción de PROPONER una consolidación — este es el único momento en que el
+# agente ya está con la bitácora en la mano.
+# El fragmento va sin comillas dobles ni backslashes: se inyecta en un string JSON.
+CAP_MSG=""
+case "$(bash "$ROOT/.claude/hooks/check-diary-size.sh" --level 2>/dev/null || echo OK)" in
+  SOFT) CAP_MSG='\n\nNOTA DE TAMAÑO: docs/BITACORA.md va larga. Sé breve y no repitas lo que ya está en entradas previas.' ;;
+  HARD) CAP_MSG='\n\n⚠ TOPE DE CONSOLIDACIÓN ALCANZADO: docs/BITACORA.md superó el techo (corré «bash .claude/hooks/check-diary-size.sh» para ver los números). Además de tu entrada, PROPONÉ una consolidación: sintetizar las entradas viejas en aprendizajes duraderos, dejar VERBATIM las últimas, y mandar a docs/adr/ lo que sea una DECISIÓN técnica y no una nota de diario. NO consolides por tu cuenta: proponé y esperá aprobación. Y si lo hacés, hacelo desde la rama principal con el árbol limpio: este archivo es merge=union y reescribirlo en una rama larga garantiza conflicto.' ;;
+esac
+
+printf '{"decision":"block","reason":"[AGENT DIARY] Esta sesión editó archivos del repo. Antes de terminar, registrá UNA entrada al FINAL de docs/BITACORA.md con este formato:\\n\\n## %s — <tu agente> (rama: %s)\\n- Qué se avanzó: (con estado de tests: en verde / rotos / no corridos)\\n- Qué quedó bloqueado:\\n- Qué se decidió: (si es técnica cara de revertir → también a docs/adr/)\\n- Qué debe saber el próximo agente:\\n\\nREGLAS: la entrada más reciente SIEMPRE abajo. UNA entrada por sesión: si seguís trabajando después, AMPLIÁ la tuya (no crees otra). Poné SIEMPRE tu agente y tu rama en el encabezado: el archivo es merge=union, así que si otro agente trabajó en paralelo sus entradas se van a intercalar con las tuyas y el orden no alcanza para saber quién escribió qué. Después terminá normalmente. (Desactivar: crear .repo-meta/diary.disabled)%s"}' "$DAY" "$BRANCH" "$CAP_MSG"
 exit 0

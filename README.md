@@ -44,6 +44,7 @@ Prerrequisito: PRD/MVP ya escrito en el vault dueño (personal o de empresa) —
 | `docs/product/` | Destino del export pack del vault |
 | `docs/adr/` | Decisiones técnicas (formato en su README) |
 | `docs/BITACORA.md` + hooks `session-touch`/`agent-diary` | Handoffs entre sesiones de agente — el Stop hook pide la entrada solo en sesiones que editaron archivos (determinista, no advisory) |
+| `check-diary-size.sh` | **Tope de consolidación de la bitácora.** No rota y encima recibe entradas de varias ramas por `merge=union`: sin techo crece toda la vida del proyecto. Pasado el umbral, el Stop hook pide **proponer** una consolidación (no borra ni bloquea; lo que sea *decisión* técnica va a `docs/adr/`, no al diario). Estado: `bash .claude/hooks/check-diary-size.sh` · apagar: `.repo-meta/diary-cap.disabled` |
 | `setup.sh` | Activación por clon: hooksPath + renormalizar LF + chequeo de requisitos |
 | `.gitattributes` | Hooks bash siempre LF (con CRLF se rompen en Git Bash/Windows) |
 | `README.proyecto.md` | Esqueleto del README real del proyecto (paso 5 del kickoff) |
