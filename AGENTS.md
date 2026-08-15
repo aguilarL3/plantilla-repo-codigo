@@ -13,6 +13,7 @@
 - **Instalar dependencias:** `[comando]`
 - **Correr en dev:** `[comando]`
 - **Tests:** `[comando]` — correr tests puntuales, no la suite entera, salvo cierre de tarea
+- **Suite completa (cierre):** `[comando]` — el que corren `@implementer` y `@reviewer` para dar una tarea por cerrada. **Los agentes lo leen de acá: no lo adivinan ni lo hardcodean.** Es la misma suite que cablean `.githooks/pre-commit` y `.github/workflows/verify.yml`.
 - **Lint/typecheck:** `[comando]`
 
 ## Convenciones
@@ -22,12 +23,35 @@
 - Toda tarea cierra con su verificación corriendo (tests/build), no con "parece que anda".
 - **Docs (`specs/`, `docs/adr/`, `docs/product/`, `BITACORA`):** frontmatter [OKF v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog): `type` · `title` · `description` · `generated: {by, at}` (las plantillas ya lo traen). `generated.by` = actor que generó/editó (`process:<agente>`, ej. `process:claude-code`, o `human:<usuario>`); `generated.at` = datetime ISO 8601 (`YYYY-MM-DDT00:00:00Z`) de la última edición de fondo — actualizalo al tocar el doc. Si un doc cita fuentes, van en `sources`. Enlaces internos en **markdown estándar** `[texto](ruta.md)`. Sin `index.md` ni maquinaria: `README.md` es la guía de cada carpeta (convención GitHub). El código (`src/`) no lleva nada de esto.
 
-## Dónde está el contexto
+## Dónde está el contexto y Flujo SDD
 
+- `feature_list.json` — Manifiesto de features con estado (`pending` / `spec_ready` / `in_progress` / `done` / `blocked`). Punto de entrada para saber qué construir.
 - `docs/product/` — PRD y decisiones de producto (snapshot exportado del vault dueño; **no editarlo acá** — los cambios de producto se deciden en el vault y se re-exportan).
-- `specs/<feature>/` — spec.md (qué) → plan.md (cómo) → tasks.md (pasos). Features grandes arrancan por acá.
-- `docs/adr/` — decisiones técnicas. Si tomás una decisión de arquitectura, registrala.
-- `docs/BITACORA.md` — handoff entre sesiones de agente: al cerrar una sesión con trabajo hecho, agregá tu entrada al final.
+- `specs/<feature>/` — Trinidad Kiro-style: `spec.md` (el QUÉ con requisitos EARS `R1..Rn`) → `plan.md` (el CÓMO técnico) → `tasks.md` (pasos `T1..Tn` con tests asociados).
+- `.claude/agents/` — Subagentes especializados: `@implementer` (ejecución quirúrgica en contexto limpio) y `@reviewer` (auditor adversarial que valida la trazabilidad `R<n>` ↔ test).
+- `docs/adr/` — Decisiones técnicas. Si tomás una decisión de arquitectura, registrala.
+- `docs/BITACORA.md` — Handoff entre sesiones de agente: al cerrar una sesión con trabajo hecho, agregá tu entrada al final.
+
+### Puerta de Aprobación Humana en SDD
+```
+pending ──▶ [Redactar spec] ──▶ spec_ready ──▶ ⏸ HUMANO APRUEBA ──▶ in_progress ──▶ [@implementer ──▶ @reviewer] ──▶ done
+```
+1. Una feature con `"sdd": true` se redacta primero en `specs/<feature>/` y pasa a `spec_ready`.
+2. **Freno de mano obligatorio:** El agente se detiene y pide aprobación humana antes de tocar código.
+3. Al recibir el *"aprobado"*, la feature pasa a `in_progress`, el `@implementer` ejecuta las `T<n>` en contexto fresco y el `@reviewer` audita antes del commit deliberado.
+
+**Quién mueve el `status`** — para que el manifiesto no se adelante a la realidad:
+
+| Transición | Quién |
+|---|---|
+| `pending → spec_ready` | El agente principal, al terminar la trinidad |
+| `spec_ready → in_progress` | **Solo el humano.** Si un agente puede moverla, no hay puerta |
+| `in_progress → done` | El humano, tras el `🟢` del `@reviewer` |
+| `→ blocked` | Cualquiera, en cualquier momento |
+
+Los subagentes **nunca escriben `status`**: reportan y el humano decide. El `@implementer` sí marca `[x]` en `tasks.md` (eso es progreso verificable, no decisión).
+
+> **La aprobación se commitea sola.** Pasar una feature a `in_progress` va en su propio commit, *antes* del código (`git commit feature_list.json -m "aprueba: <feature>"`). Si entran juntos, el commit se aprueba a sí mismo y no queda registro de que alguien haya decidido nada — el hook no puede saber quién editó el manifiesto, pero sí puede exigir que la decisión quede fechada aparte. Lo hace cumplir `.claude/hooks/sdd-gate.sh` desde el `pre-commit`.
 
 ## Git: ramas, worktrees y trabajo en paralelo
 

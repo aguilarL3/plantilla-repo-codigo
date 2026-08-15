@@ -14,6 +14,9 @@
 #                  un repo recién nacido no tiene suite que correr.
 #   bitácora     → informa. El handoff es una convención de agentes, no algo
 #                  que tenga sentido imponerle a un humano que arregla un typo.
+#   gate SDD     → informa. La puerta de aprobación de una spec es un acuerdo
+#                  entre el dueño del repo y sus agentes; cuando el PR existe,
+#                  el humano ya la vio. El control real es el pre-commit.
 
 name: verify
 
@@ -86,6 +89,25 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       # ── INFORMATIVO ──────────────────────────────────────────────────────────
+      - name: Flujo SDD
+        continue-on-error: true
+        env:
+          BASE: ${{ steps.range.outputs.base }}
+          HEAD: ${{ steps.range.outputs.head }}
+        run: |
+          # El mismo gate del pre-commit, en modo --range. Informa en vez de
+          # bloquear (ver cabecera). Inerte si el repo no tiene feature_list.json.
+          if OUT="$(bash .claude/hooks/sdd-gate.sh --range "$BASE" "$HEAD" 2>&1)"; then
+            if [ -n "$OUT" ]; then echo "$OUT"; fi
+          else
+            {
+              echo "### Flujo SDD"
+              echo '```'
+              echo "$OUT"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Handoff en la bitácora
         continue-on-error: true
         env:

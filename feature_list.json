@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "project": "nombre-del-proyecto",
+  "description": "Descripción breve del proyecto.",
+  "rules": {
+    "one_feature_at_a_time": true,
+    "require_tests_to_close": true,
+    "require_approved_spec_to_implement": true,
+    "valid_status": ["pending", "spec_ready", "in_progress", "done", "blocked"],
+    "sdd_required_when": "feature has \"sdd\": true"
+  },
+  "features": [
+    {
+      "id": 0,
+      "name": "000-ejemplo",
+      "title": "Feature de Ejemplo (Seed)",
+      "description": "Estructura de referencia para el flujo Spec-Driven Development. Reemplazar o borrar al iniciar la primera feature real.",
+      "sdd": true,
+      "status": "pending"
+    }
+  ]
+}

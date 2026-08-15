@@ -52,6 +52,13 @@ if [ "$REPO_MODE" = "equipo" ] && [ ! -f .repo-meta/branch-gate.disabled ]; then
   fi
 fi
 
+# ── Gate SDD (solo si el repo usa feature_list.json) ─────────────────────────
+# Frena el código de una feature cuyo spec todavía no aprobó el humano, y hace
+# cumplir las reglas que el manifiesto declara (una feature a la vez, no cerrar
+# con tasks abiertas). Va antes del secret-scan porque parsear un JSON es más
+# barato que escanear el diff entero. Inerte si no hay feature_list.json.
+bash "$ROOT/.claude/hooks/sdd-gate.sh" || exit 1
+
 # ── Secretos (bloqueante, siempre) ───────────────────────────────────────────
 bash "$ROOT/.claude/hooks/secret-scan.sh" || exit 1
 
