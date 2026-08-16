@@ -13,6 +13,7 @@ Origen: `SOP Proyectos de Código` (SOP-013) del [Sistema Maestro](https://githu
 - Las **guardas corren solas**: `security-guard` bloquea comandos peligrosos *antes* de ejecutarse, y `secret-scan` frena cualquier commit con un secreto staged.
 - Al cerrar una sesión que editó archivos, el **Stop hook exige el handoff** en `docs/BITACORA.md` — el próximo agente (aunque sea otro: Codex, Gemini CLI…) arranca con contexto, sin que le repitas nada.
 - Los **commits son deliberados y con tests en verde** — acá no existe el auto-commit.
+- Si usás el flujo **spec-driven**, el agente **no puede empezar a programar solo**: una feature cuya spec no aprobaste frena el commit. La aprobación la das vos, y queda fechada en el historial.
 
 ## Cómo usar la plantilla (kickoff, ~30-45 min)
 
@@ -25,8 +26,8 @@ Prerrequisito: PRD/MVP ya escrito en el vault dueño (personal o de empresa) —
 3. *(vault)* **Exportar el pack de contexto** del vault → `docs/product/PRD.md` (+ decisiones), con encabezado de fecha y origen. Push consciente: el repo nunca lee el vault por su cuenta. Sin vault: escribí el PRD directo ahí.
 4. **Completar `AGENTS.md`**: nombre, qué es, stack y comandos reales. Borrar todo placeholder que no aplique — la ley se mantiene magra.
 5. **Completar `README.proyecto.md` y renombrarlo a `README.md`** (pisa este archivo: la plantilla ya cumplió su función).
-6. **Elegir stack e inicializar** (`npm create`, `uv init`, etc.). Configurar test runner y lint, y **cablearlos en los dos lugares**: `.githooks/pre-commit` (tu máquina) y `.github/workflows/verify.yml` (el PR) — los dos traen el bloque marcado. Hoy solo corre secret-scan. Tras unas sesiones, generar la allowlist de permisos del stack con `/fewer-permission-prompts` (del proyecto → `settings.json`; personal → `settings.local.json`).
-7. **Primera spec**: `specs/001-mvp/spec.md` (qué) → `plan.md` (cómo) → `tasks.md` (pasos chicos, sin saltos de complejidad).
+6. **Elegir stack e inicializar** (`npm create`, `uv init`, etc.). Configurar test runner y lint, y **cablearlos en los dos lugares**: `.githooks/pre-commit` (tu máquina) y `.github/workflows/verify.yml` (el PR) — los dos traen el bloque marcado. Hoy solo corre secret-scan. **Declaralos también en `AGENTS.md`** (*Suite completa*): de ahí los leen los subagentes, que no adivinan el runner. Tras unas sesiones, generar la allowlist de permisos del stack con `/fewer-permission-prompts` (del proyecto → `settings.json`; personal → `settings.local.json`).
+7. **Primera feature**: poné el nombre real del proyecto en `feature_list.json` y reemplazá la feature de ejemplo por la tuya. Después su spec: `specs/001-mvp/spec.md` (qué) → `plan.md` (cómo) → `tasks.md` (pasos chicos, sin saltos de complejidad). Si le ponés `"sdd": true`, la feature no pasa a código hasta que vos la aprobés — ver *Flujo spec-driven*, más abajo.
 8. *(vault)* Crear la **nota de proyecto en el vault** (o actualizarla): campo `repo:` apuntando acá.
 9. **Si van a ser más de uno:** ver *Más de una persona en el repo*, más abajo (son 4 pasos y uno es en GitHub).
 10. Abrir Claude Code **desde esta carpeta** (nunca desde el vault) y a construir.
@@ -39,7 +40,7 @@ Prerrequisito: PRD/MVP ya escrito en el vault dueño (personal o de empresa) —
 |---|---|
 | `AGENTS.md` / `CLAUDE.md` | Ley del repo (estándar AGENTS.md; CLAUDE.md la importa) |
 | `.claude/settings.json` + `.claude/hooks/` | Baseline de Seguridad: deny + security-guard (PreToolUse) |
-| `.githooks/pre-commit` | Gate de commit: secret-scan (agregar lint/tests en el paso 5) |
+| `.githooks/pre-commit` | Gate de commit: gate SDD → secret-scan (agregar lint/tests en el paso 6) |
 | `.gitignore` + `.env.example` | Secretos fuera del repo desde el día 1 |
 | `docs/product/` | Destino del export pack del vault |
 | `docs/adr/` | Decisiones técnicas (formato en su README) |
@@ -50,10 +51,30 @@ Prerrequisito: PRD/MVP ya escrito en el vault dueño (personal o de empresa) —
 | `.gitattributes` | Hooks bash siempre LF (con CRLF se rompen en Git Bash/Windows) |
 | `README.proyecto.md` | Esqueleto del README real del proyecto (paso 5 del kickoff) |
 | `specs/000-ejemplo/` | Esqueleto spec → plan → tasks (borrar al crear la 001 real) |
+| `feature_list.json` | **Manifiesto de features y su estado** — qué se está construyendo y qué falta aprobar. Poner el nombre real del proyecto en el kickoff |
+| `.claude/agents/` | **Subagentes SDD**: `@implementer` (construye en contexto limpio) y `@reviewer` (audita el diff contra la spec, adversarial). Ver *Flujo spec-driven* |
+| `sdd-gate.sh` | **El freno de mano.** Bloquea el commit si una feature en `spec_ready` toca código, si hay dos en curso, o si se cierra una con tasks abiertas. Inerte si no usás `feature_list.json` · apagar: `.repo-meta/sdd-gate.disabled` |
 | `repo.conf` | `REPO_MODE=solo\|equipo` — el modo del repo (versionado, compartido) |
 | `.github/workflows/verify.yml` | El gate del lado del servidor: secret-scan en cada PR |
 | `.github/CODEOWNERS.example` | Quién **revisa** qué — copiar a `CODEOWNERS` para activar (no restringe quién escribe) |
 | `COMO-TRABAJAMOS.example.md` | El acuerdo de trabajo en lenguaje llano — completar y renombrar cuando entra la segunda persona |
+
+## Flujo spec-driven (opcional, se activa con `"sdd": true`)
+
+Para features donde equivocarse sale caro —dinero, permisos, datos de usuario— conviene que el agente **escriba primero qué va a construir y espere tu visto bueno**. Eso es todo lo que hace esta capa. Si no la querés, borrá `feature_list.json` y queda inerte: no hay nada más que desactivar.
+
+```
+pending ─▶ [el agente redacta la spec] ─▶ spec_ready ─▶ ⏸ VOS APROBÁS ─▶ in_progress ─▶ [@implementer ─▶ @reviewer] ─▶ done
+```
+
+- **La pausa es real, no una convención.** Con una feature en `spec_ready`, cualquier commit que toque código se rechaza. No depende de que el agente se acuerde de preguntarte.
+- **Aprobar es mover el estado a `in_progress`** en `feature_list.json`, **y va en su propio commit**, antes del código:
+  ```
+  git commit feature_list.json -m "aprueba: 001-mvp"
+  ```
+  Si la aprobación entra junto con el código, el commit se aprueba a sí mismo y no queda registro de que alguien decidió. El gate lo frena y te dice el comando exacto.
+- **Los dos subagentes** (`.claude/agents/`) existen por motivos distintos: el `@implementer` construye en un hilo limpio, sin arrastrar la discusión de diseño; el `@reviewer` audita el diff **sin haber escrito el código**, porque quien escribe el código y sus tests valida sus propios malentendidos.
+- **Qué NO cubre, para que no te confíes de más:** una feature en `pending` no está protegida (el gate mira `spec_ready`), y el manifiesto lo puede editar un agente — lo que el gate garantiza es que la aprobación quede **fechada aparte** en el historial, no quién la firmó. La ley completa está en `AGENTS.md`.
 
 ## Más de una persona en el repo
 

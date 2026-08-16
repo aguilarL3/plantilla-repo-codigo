@@ -53,6 +53,19 @@ else
   echo "[AVISO] falta python: security-guard queda fail-open (los deny de settings.json siguen activos)"
 fi
 
+# 4b. Flujo spec-driven (opcional): avisar si quedó el seed sin personalizar.
+# No es un error —un repo puede no usar SDD— pero un manifiesto con el nombre
+# de la plantilla adentro es señal de que el paso 7 del kickoff quedó a medias.
+if [ -f feature_list.json ]; then
+  if grep -q '"nombre-del-proyecto"' feature_list.json 2>/dev/null; then
+    echo "[i] feature_list.json todavía dice «nombre-del-proyecto» (kickoff paso 7)."
+    echo "    Poné el nombre real y reemplazá la feature 000-ejemplo por la tuya."
+    echo "    Si este repo no usa el flujo spec-driven, borralo: queda todo inerte."
+  else
+    echo "[ok] feature_list.json personalizado (gate SDD activo en cada commit)"
+  fi
+fi
+
 # 5. Modo equipo: lo que el gate local NO puede garantizar por sí solo
 if [ "$REPO_MODE" = "equipo" ]; then
   echo ""

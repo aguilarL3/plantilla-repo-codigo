@@ -78,7 +78,7 @@ Cambian tres cosas, y ninguna es opcional:
 >
 > - **`.github/CODEOWNERS`** puede no existir — la plantilla trae solo `CODEOWNERS.example`. Y aun existiendo, **no restringe quién escribe**: solo auto-asigna revisor, y eso requiere *"Require review from Code Owners"*, que es una regla de rama.
 > - **Las reglas de rama de GitHub no existen en plan Free con repo privado.** La API responde `403 · "Upgrade to GitHub Pro or make this repository public"`. Sin ellas, el workflow `verify` es **señal, no bloqueo**: un PR en rojo se mergea igual.
-> - **El `verify` puede estar verde sin correr nada** si la suite no se cableó todavía (ver `README`, kickoff paso 7).
+> - **El `verify` puede estar verde sin correr nada** si la suite no se cableó todavía (ver `README`, kickoff paso 6).
 >
 > **Consecuencia: el gate de `git commit` en la máquina de cada persona suele ser el único control automático real. No lo saltees con `--no-verify`.**
 >
