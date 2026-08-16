@@ -53,7 +53,7 @@ Prerrequisito: PRD/MVP ya escrito en el vault dueño (personal o de empresa) —
 | `specs/000-ejemplo/` | Esqueleto spec → plan → tasks (borrar al crear la 001 real) |
 | `feature_list.json` | **Manifiesto de features y su estado** — qué se está construyendo y qué falta aprobar. Poner el nombre real del proyecto en el kickoff |
 | `.claude/agents/` | **Subagentes SDD**: `@implementer` (construye en contexto limpio) y `@reviewer` (audita el diff contra la spec, adversarial). Ver *Flujo spec-driven* |
-| `sdd-gate.sh` | **El freno de mano.** Bloquea el commit si una feature en `spec_ready` toca código, si hay dos en curso, o si se cierra una con tasks abiertas. Inerte si no usás `feature_list.json` · apagar: `.repo-meta/sdd-gate.disabled` |
+| `sdd-gate.sh` | **El freno de mano.** Bloquea el commit si una feature en `spec_ready` toca código, si hay dos en curso, o si se cierra una con tasks abiertas. Inerte si no usás `feature_list.json` · apagar: `.repo-meta/sdd-gate.disabled` · tests: `bash .claude/hooks/sdd-gate.test.sh` (19 escenarios sobre repos git reales) |
 | `repo.conf` | `REPO_MODE=solo\|equipo` — el modo del repo (versionado, compartido) |
 | `.github/workflows/verify.yml` | El gate del lado del servidor: secret-scan en cada PR |
 | `.github/CODEOWNERS.example` | Quién **revisa** qué — copiar a `CODEOWNERS` para activar (no restringe quién escribe) |
