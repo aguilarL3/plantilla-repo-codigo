@@ -2,7 +2,7 @@
 
 Seed de la **capa sistema** para arrancar un proyecto de código con agentes: seguridad determinista + archivos de ley + estructura de specs y docs. La capa *código* (lenguaje, framework, `src/`, CI) se completa en el kickoff de cada proyecto — deliberadamente no viene en la plantilla.
 
-Origen: `SOP Proyectos de Código` (SOP-013) del [Sistema Maestro](https://github.com/leandroeaguilar/sistema-maestro-template), validado contra la industria (Anthropic best practices, AGENTS.md/Linux Foundation, github/spec-kit, Harper Reed). Todo en **español**.
+Origen: `SOP Proyectos de Código` (SOP-013) del **Sistema Maestro** (sistema propio, privado), validado contra la industria (Anthropic best practices, AGENTS.md/Linux Foundation, github/spec-kit, Harper Reed). Todo en **español**.
 
 **Requisitos:** [Git](https://git-scm.com) (con Git Bash en Windows) y Python — los usan los hooks de seguridad. Un agente de código (ej. [Claude Code](https://claude.ai/download)) para sacarle el jugo.
 
